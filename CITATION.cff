@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+title: "TrustTable: A Neuro-Symbolic Auditing Framework for Faithful Table QA"
+message: "If you use this code or dataset, please cite the TrustTable paper and the upstream datasets."
+type: software
+authors:
+  - family-names: Zhao
+    given-names: Guangzhen
+  - family-names: Kong
+    given-names: Dechang
+  - family-names: Wu
+    given-names: Tongyu
+  - family-names: Dong
+    given-names: Zhenjiang
+year: 2026
+license: MIT
+

@@ -1,0 +1,13 @@
+Data License
+
+TrustTable-generated diagnostic annotations are released under CC BY 4.0,
+subject to the licenses and attribution requirements of the upstream datasets.
+
+Upstream attribution:
+- FinQA (Chen et al., 2021), original CC-BY-NC-4.0.
+- ATOMIC_Medical / sci_tab medical fact verification data.
+- PubHealthTab public-health fact verification data.
+- WikiTableQuestions (Pasupat and Liang, 2015), CC-BY-SA-4.0.
+
+Users are responsible for complying with the most restrictive applicable
+upstream license for any subset they redistribute.
