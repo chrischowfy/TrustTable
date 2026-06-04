@@ -114,17 +114,6 @@ def validate_data() -> None:
         fail(f"release has {total} records; expected 4600")
 
 
-def validate_manifest() -> None:
-    manifest = json.loads((ROOT / "manifest.json").read_text())
-    if manifest.get("dataset_size") != "small":
-        fail("manifest dataset_size must be 'small'")
-    if manifest.get("data_root") != "data/small":
-        fail("manifest data_root must be 'data/small'")
-    active = manifest.get("panel_totals", {}).get("total", {}).get("active")
-    if active != 4600:
-        fail(f"manifest total active is {active}; expected 4600")
-
-
 def validate_no_secrets() -> None:
     for path in ROOT.rglob("*"):
         if path.is_dir() or ".git" in path.parts:
@@ -139,9 +128,8 @@ def validate_no_secrets() -> None:
 
 def main() -> None:
     validate_data()
-    validate_manifest()
     validate_no_secrets()
-    print("OK: small release tree is valid (25 files, 4600 active records, no _skipped blocks).")
+    print("OK: small release tree is valid (25 data files, 4600 active records, no _skipped blocks).")
 
 
 if __name__ == "__main__":

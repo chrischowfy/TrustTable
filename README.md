@@ -1,108 +1,89 @@
 # TrustTable
 
 TrustTable is a neuro-symbolic auditing framework for faithful TableQA
-reasoning. This repository contains the public GitHub package: verifier code,
-baseline runners, the TrustTable-Bench `small` diagnostic dataset, result
-metadata, and release validation tools.
+reasoning. It evaluates whether a model-generated reasoning trace is grounded
+in table evidence, mathematically consistent, and logically aligned with the
+question, rather than scoring only the final answer.
 
-## What's Included
+This repository contains the public TrustTable release package: verifier code,
+baseline runners, the TrustTable-Bench small diagnostic dataset, paper result
+metadata, and a lightweight validation script.
 
-- `code/`: TrustTable and baseline verifier implementations.
-- `data/small/`: public TrustTable-Bench small release data, 4 panels and 25
-  JSON files.
-- `results/table1.json`: paper/reproduction result table metadata.
-- `manifest.json`: versions, counts, provenance, and release policy.
-- `DATA_CARD.md`: dataset schema, taxonomy, counts, known quality notes.
-- `scripts/validate_release.py`: checks data counts, schema, `_skipped`, and
-  accidental secret/local-path leakage.
+## Highlights
 
-This repository intentionally publishes the `small` diagnostic release rather
-than the planned full-scale panel data. Full-scale Panel A/B/C datasets are not
-bundled here.
+- Audits table-based chain-of-thought reasoning with fact, arithmetic, logic,
+  and consistency checks.
+- Includes baseline runners for Program-of-Thoughts, atomic skill auditing,
+  stepwise LLM judging, and VeriCoT-style verification.
+- Provides a compact public benchmark split across finance, medical,
+  public-health, and WikiTableQuestions-style tables.
+- Ships with reproducibility metadata for the main reported result table.
 
-## Dataset: `small`
-
-The public `small` data contains only active generated blocks. Records whose target
-`generated_samples` block was marked `_skipped` are not exported, so placeholder
-records do not inflate release size.
-
-| Panel | Files | Total raw | Active | _skipped |
-|---|---:|---:|---:|---:|
-| FinQA | 6 | 1228 | 1102 | 126 |
-| Med | 6 | 1210 | 1144 | 66 |
-| PubH | 6 | 1208 | 989 | 219 |
-| WTQ | 7 | 1583 | 1365 | 218 |
-| Total | 25 | 5229 | 4600 | 629 |
-
-The release is a unified Track-2 base plus Track-3 increment. Record-level
-provenance fields are retained when present: `_track3_revised`,
-`_track2_pad_uniform`, and `_track2_pad`.
-
-Track-3 net increment, excluding Track-2 base records:
-
-| Panel | Track-3 Net New |
-|---|---:|
-| FinQA | 867 |
-| Med | 870 |
-| PubH | 714 |
-| WTQ | 920 |
-| Total | 3371 |
-
-WTQ includes 200 `type4_answer_perturb` records; perturb records are all
-Track-2 base.
-
-## Error Types
-
-| Type | Shape | Description |
-|---|---|---|
-| `type1_correct` | `Z+ A+` | Faithful reasoning and correct answer |
-| `type2_grounding_error` | `Z- A+` | Correct answer with fabricated or misgrounded table value |
-| `type2_arithmetic_error` | `Z- A+` | Correct answer with erroneous arithmetic in the reasoning path |
-| `type2_logic_error` | `Z- A+` | Correct answer with wrong rule, condition, quantifier, or aggregation |
-| `type3_fully_wrong` | `Z- A-` | Wrong reasoning and wrong answer |
-| `type4_calc_error` | `Z+ A-` | Correct grounding/logic with wrong calculation and wrong answer |
-| `type4_answer_perturb` | `Z+ A-` | Correct reasoning with perturbed final answer; WTQ only |
-
-## Layout
+## Repository Layout
 
 ```text
 .
-├── code/
-│   ├── run_pipeline_main.py
-│   ├── run_pot_baseline.py
-│   ├── run_atomic_skills_baseline.py
-│   ├── run_llm_judge_stepwise.py
-│   ├── run_vericot_baseline.py
-│   ├── eval_cot_verifier.py
-│   ├── src/
-│   ├── utils/
-│   ├── configs/
-│   └── requirements.txt
-├── data/
-│   └── small/
-│       ├── panel_a_finqa/
-│       ├── panel_b_med/
-│       ├── panel_b_pubh/
-│       └── panel_c_wtq/
-├── results/
-├── scripts/
-├── DATA_CARD.md
+├── code/                  # TrustTable and baseline runner implementations
+├── data/small/            # Public TrustTable-Bench small diagnostic release
+├── results/table1.json    # Result metadata for the main comparison table
+├── scripts/               # Release validation utilities
+├── CITATION.cff
 ├── LICENSE
-├── LICENSE-DATA
-└── manifest.json
+└── LICENSE-DATA
 ```
 
-## Quick Start
+## Dataset
+
+The public dataset is the `small` release of TrustTable-Bench. It contains
+4,600 active records across 25 JSON files.
+
+| Panel | Directory | Files | Records |
+|---|---|---:|---:|
+| Panel A: FinQA | `data/small/panel_a_finqa/` | 6 | 1,102 |
+| Panel B: Medical | `data/small/panel_b_med/` | 6 | 1,144 |
+| Panel B: Public Health | `data/small/panel_b_pubh/` | 6 | 989 |
+| Panel C: WTQ | `data/small/panel_c_wtq/` | 7 | 1,365 |
+| Total | `data/small/` | 25 | 4,600 |
+
+Each record includes a question, table, gold answer, and one generated
+reasoning block. The generated block encodes one diagnostic condition:
+
+| Type | Meaning |
+|---|---|
+| `type1_correct` | Faithful reasoning with a correct answer |
+| `type2_grounding_error` | Correct answer with unsupported or misgrounded evidence |
+| `type2_arithmetic_error` | Correct answer with an arithmetic error in the reasoning |
+| `type2_logic_error` | Correct answer with an invalid logical step |
+| `type3_fully_wrong` | Wrong reasoning and wrong answer |
+| `type4_calc_error` | Faithful grounding and logic with a wrong calculation or answer |
+| `type4_answer_perturb` | Faithful reasoning with a perturbed final answer; WTQ only |
+
+## Installation
+
+Use Python 3.10 or newer.
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
 pip install -r code/requirements.txt
+```
 
-export LLM_API_KEY=...
+TrustTable runners read model credentials from environment variables:
+
+```bash
+export LLM_API_KEY=your_api_key
 export LLM_BASE_URL=https://api.deepseek.com
 export LLM_MODEL=deepseek-chat
+```
 
+The same variables can also be placed in a local `.env` file based on
+`.env.example`. Do not commit populated credential files.
+
+## Quick Start
+
+Run the TrustTable verifier on one dataset file:
+
+```bash
 cd code
 python run_pipeline_main.py \
   ../data/small/panel_c_wtq/type1_correct.json \
@@ -118,49 +99,40 @@ python run_pot_baseline.py \
   /tmp/pot_finqa_type1.json
 ```
 
-Available baseline runners:
+Available runners:
 
+- `run_pipeline_main.py`
 - `run_pot_baseline.py`
 - `run_atomic_skills_baseline.py`
 - `run_llm_judge_stepwise.py`
 - `run_vericot_baseline.py`
 
-Validate the release tree:
+## Validation
+
+Validate the release tree after cloning or before redistribution:
 
 ```bash
 python scripts/validate_release.py
 ```
 
-## Configuration
+The validator checks expected data files, record counts, required fields,
+duplicate IDs, skipped placeholder blocks, and accidental secret or local-path
+leakage.
 
-Credentials are read from environment variables. Do not commit API keys.
+## Results
 
-```bash
-cp .env.example .env
-```
-
-Supported variables:
-
-- `LLM_API_KEY`
-- `LLM_BASE_URL`
-- `LLM_MODEL`
-
-## Do Not Publish Legacy Artifacts
-
-This release intentionally excludes legacy `processed_data/*` artifacts such as
-`*_clean50_*`, `*_subset_100_*`, `*_subset_50_*`,
-`*_enhanced_100.json`, `runner_input_cleaned_*_100.json`,
-`wtq_subset_*_gemini3pro.json`, and `wtq_type1_clean_*.json`.
-
-Those are Track-1 or early-stage artifacts superseded by this release.
+`results/table1.json` contains the metric values associated with the main
+comparison table. Metrics are reported as percentages and include VCAR,
+DIR_spur, DIR_inc_H, and FP_H.
 
 ## Citation
 
-See `CITATION.cff`. If you use this repository, cite the TrustTable paper and
-the upstream datasets listed in `LICENSE-DATA`.
+If you use TrustTable code or data, cite the TrustTable paper and the upstream
+datasets listed in `LICENSE-DATA`. Citation metadata is provided in
+`CITATION.cff`.
 
-## Licenses
+## License
 
-- Code: MIT, see `LICENSE`.
-- TrustTable-generated diagnostic annotations: CC BY 4.0, subject to upstream
-  dataset restrictions. See `LICENSE-DATA`.
+- Code is released under the MIT License. See `LICENSE`.
+- TrustTable-generated diagnostic annotations are released under CC BY 4.0,
+  subject to upstream dataset restrictions. See `LICENSE-DATA`.
