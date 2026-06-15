@@ -107,30 +107,6 @@ Available runners:
 - `run_llm_judge_stepwise.py`
 - `run_vericot_baseline.py`
 
-## Validation
-
-Validate the release tree after cloning or before redistribution:
-
-```bash
-python scripts/validate_release.py
-```
-
-The validator checks expected data files, record counts, required fields,
-duplicate IDs, skipped placeholder blocks, and accidental secret or local-path
-leakage.
-
-## Results
-
-`results/table1.json` contains the metric values associated with the main
-comparison table. Metrics are reported as percentages and include VCAR,
-DIR_spur, DIR_inc_H, and FP_H.
-
-## Citation
-
-If you use TrustTable code or data, cite the TrustTable paper and the upstream
-datasets listed in `LICENSE-DATA`. Citation metadata is provided in
-`CITATION.cff`.
-
 ## License
 
 - Code is released under the MIT License. See `LICENSE`.
